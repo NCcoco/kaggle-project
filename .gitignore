@@ -1,0 +1,17 @@
+.vscode
+.vscode/*
+test
+test/*
+wow.py
+my-first-cnn-model.h5
+*.h5
+*/*.h5
+utils-study
+utils-study/*
+myutils
+myutils/*
+.DS_Store
+.DS_Store/*
+*/datasets/*
+datasets
+
