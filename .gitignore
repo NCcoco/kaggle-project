@@ -20,10 +20,12 @@ datasets
 *.npz
 **/models/**
 **/__pycache__/**
-__pycache__
+**/__pycache__
 **/aug/**
 aug
 **/model
 **/models
 **/.idea
 .idea
+**/tmp
+
