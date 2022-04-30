@@ -23,3 +23,5 @@ datasets
 __pycache__
 **/aug/**
 aug
+**/model
+**/models
