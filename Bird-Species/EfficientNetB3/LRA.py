@@ -95,7 +95,8 @@ def print_in_color(txt_msg, fore_tupple, back_tupple):
 
 # 定义自定义回调的代码
 class LRA(keras.callbacks.Callback):
-    def __init__(self, model, base_model, patience, stop_patience, threshold, factor, dwell, batches, initial_epoch,
+    def __init__(self, model, base_model, patience, stop_patience,
+                 threshold, factor, dwell, batches, initial_epoch,
                  epochs, ask_epoch):
         super(LRA, self).__init__()
         self.model = model
@@ -138,11 +139,11 @@ class LRA(keras.callbacks.Callback):
         if self.base_model != None:
             status = self.base_model.trainable
             if status:
-                msg = '初始化为base_model以开始训练'
+                msg = 'base_model是可训练的'
             else:
-                msg = '无法初始化为base_model'
+                msg = 'base_model是不可训练的'
         else:
-            msg = '初始化模型并开始训练'
+            msg = 'base_model不存在'
 
         print_in_color(msg, (244, 252, 3), (55, 65, 80))
         msg = '{0:^8s}{1:^10s}{2:^9s}{3:^9s}{4:^9s}{5:^9s}{6:^9s}{7:^10s}' \
@@ -178,9 +179,10 @@ class LRA(keras.callbacks.Callback):
         # 获取训练准确率
         acc = logs.get('accuracy') * 100
         loss = logs.get('loss')
-        msg = '{0:20s}processing batch {1:4s} of {2:5s} accuracy= {3:8.3f}  loss: {4:8.5f}'.format('', str(batch),
-                                                                                                   str(self.batches),
-                                                                                                   acc, loss)
+        msg = '{0:20s}processing batch {1:4s} of {2:5s} accuracy= {3:8.3f}' \
+              '  loss: {4:8.5f}'.format('', str(batch),
+                                   str(self.batches),
+                                   acc, loss)
         # 在同一行上打印以显示正在运行的批次
         print(msg, '\r', end='')
 
@@ -855,8 +857,8 @@ def balance(train_df, max_samples, min_samples, column, working_dir, image_size)
     # horizontal_flip 水平翻转
     # rotation_range 旋转角度
     # zoom_range  缩放比例
-    gen = ImageDataGenerator(horizontal_flip=True, rotation_range=20, width_shift_range=.2,
-                             height_shift_range=.2, zoom_range=.2)
+    gen = ImageDataGenerator(horizontal_flip=True, rotation_range=20,
+            width_shift_range=.2, height_shift_range=.2, zoom_range=.2)
 
     groups = train_df.groupby('labels')
     for label in train_df['labels'].unique():
@@ -866,10 +868,11 @@ def balance(train_df, max_samples, min_samples, column, working_dir, image_size)
             aug_img_count = 0
             delta = max_samples - sample_count
             target_dir = os.path.join(aug_dir, label)
-            aug_gen = gen.flow_from_dataframe(group, x_col='filepaths', y_col=None, target_size=image_size,
-                                              class_mode=None, batch_size=1, shuffle=False,
-                                              save_to_dir=target_dir, save_prefix='aug-', color_mode='rgb',
-                                              save_format='jpg')
+            aug_gen = gen.flow_from_dataframe(
+                group, x_col='filepaths', y_col=None, target_size=image_size,
+                class_mode=None, batch_size=1, shuffle=False,
+                save_to_dir=target_dir, save_prefix='aug-', color_mode='rgb',
+                save_format='jpg')
             while aug_img_count < delta:
                 images = next(aug_gen)
                 aug_img_count += len(images)
@@ -1000,19 +1003,22 @@ tvgen = ImageDataGenerator(preprocessing_function=scalar)
 
 msg = '训练集生成器'
 print_in_color(msg, (0, 255, 0), (55, 65, 80))
-train_gen = trgen.flow_from_dataframe(train_df, x_col='filepaths', y_col='labels',
-                                      target_size=img_size, class_mode='categorical',
-                                      color_mode='rgb', shuffle=True, batch_size=batch_size)
+train_gen = trgen.flow_from_dataframe(
+      train_df, x_col='filepaths', y_col='labels',
+      target_size=img_size, class_mode='categorical',
+      color_mode='rgb', shuffle=True, batch_size=batch_size)
 msg = '测试集生成器'
 print_in_color(msg, (0, 255, 255), (55, 65, 80))
-test_gen = tvgen.flow_from_dataframe(test_df, x_col='filepaths', y_col='labels',
-                                     target_size=img_size, class_mode='categorical',
-                                     color_mode='rgb', shuffle=False, batch_size=test_batch_size)
+test_gen = tvgen.flow_from_dataframe(
+     test_df, x_col='filepaths', y_col='labels',
+     target_size=img_size, class_mode='categorical',
+     color_mode='rgb', shuffle=False, batch_size=test_batch_size)
 msg = '验证集生成器'
 print_in_color(msg, (0, 255, 255), (55, 65, 80))
-valid_gen = tvgen.flow_from_dataframe(valid_df, x_col='filepaths', y_col='labels',
-                                      target_size=img_size, class_mode='categorical',
-                                      color_mode='rgb', shuffle=True, batch_size=batch_size)
+valid_gen = tvgen.flow_from_dataframe(
+      valid_df, x_col='filepaths', y_col='labels',
+      target_size=img_size, class_mode='categorical',
+      color_mode='rgb', shuffle=True, batch_size=batch_size)
 classes = list(train_gen.class_indices.keys())
 class_out = len(classes)
 train_steps = int(np.ceil(len(train_gen.labels) / batch_size))
@@ -1029,12 +1035,15 @@ base_model = keras.applications.EfficientNetB3(include_top=False,
 x = base_model.output
 x = keras.layers.BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001)(x)
 x = Dense(256, kernel_regularizer=regularizers.l2(l=0.016)
-          , activity_regularizer=regularizers.l1(0.006), bias_regularizer=regularizers.l1(0.006), activation='relu')(x)
+          , activity_regularizer=regularizers.l1(0.006),
+          bias_regularizer=regularizers.l1(0.006), activation='relu')(x)
 x = Dropout(rate=.45, seed=123)(x)
 output = Dense(class_out, activation='softmax')(x)
 model = Model(inputs=base_model.input, outputs=output)
+print(model.summary())
 model.compile(optimizer=Adam(learning_rate=0.001), loss=keras.losses.CategoricalCrossentropy(), metrics=['accuracy'])
 
+exit()
 # 初始化一些超参数：
 # 总共迭代次数
 epochs = 40

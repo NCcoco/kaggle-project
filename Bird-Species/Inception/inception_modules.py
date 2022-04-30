@@ -12,7 +12,6 @@ class BasicConv2D(tf.keras.layers.Layer):
         self.relu = tf.keras.layers.ReLU()
 
     def call(self, inputs, training=None, **kwargs):
-        print(inputs)
         output = self.conv(inputs)
         output = self.bn(output, training=training)
         output = self.relu(output)

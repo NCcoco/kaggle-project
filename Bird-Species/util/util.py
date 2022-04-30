@@ -14,7 +14,7 @@ import platform
 import random
 from PIL import Image
 
-## 区分mac和window
+# 区分mac和window
 # 同时用两个系统真是麻烦
 base_path = os.path.abspath(".")
 dir_separator = "/"
@@ -44,7 +44,7 @@ def load_and_preprocess_from_path_label(path, label):
 
 
 # 加载鸟类图片数据和标签
-def load_datasets(batch_size = 124):
+def load_datasets(batch_size=124):
     train_path = ['Bird-Species', 'datasets', 'train']
     train_dir = base_path + dir_separator.join(train_path)
     # return __load_dataset(train_dir, batch_size=batch_size, image_size=(224,224))
@@ -63,8 +63,8 @@ def load_datasets(batch_size = 124):
 
     train_ds = tf.keras.utils.image_dataset_from_directory(
         data_root,
-        image_size=(224,224),
-        batch_size=16)
+        image_size=(224, 224),
+        batch_size=batch_size)
     # print(train_ds)
     class_names = train_ds.class_names
     # print(class_names)
@@ -83,11 +83,12 @@ def load_datasets(batch_size = 124):
     # train_ds = normalized_ds.cache().prefetch(buffer_size=AUTOTUNE)
     return train_ds
 
+
 # 加载测试集数据
 def load_test_dataset():
     test_dir = ['Bird-Species', 'datasets', 'test']
     test_dir = base_path + dir_separator.join(test_dir)
-    return __load_dataset(test_dir, batch_size=124, image_size=(224,224))
+    return __load_dataset(test_dir, batch_size=124, image_size=(224, 224))
 
 
 # 加载验证集
@@ -97,7 +98,7 @@ def load_valid_dataset():
     return __load_dataset(valid_dir)
 
 
-def __load_dataset(dir, batch_size=64, image_size=(224,224)):
+def __load_dataset(dir, batch_size=64, image_size=(224, 224)):
     data_root = pathlib.Path(dir)
     # 获取所有的图片路径
     all_image_paths = list(data_root.glob('*/*'))
@@ -134,6 +135,19 @@ def __load_dataset(dir, batch_size=64, image_size=(224,224)):
     return normalized_ds
 
 
+
+def print_in_color(txt_msg, fore_tupple, back_tupple):
+    # prints the text_msg in the foreground color specified by fore_tupple with the background specified by back_tupple
+    # text_msg is the text, fore_tupple is foregroud color tupple (r,g,b), back_tupple is background tupple (r,g,b)
+    rf, gf, bf = fore_tupple
+    rb, gb, bb = back_tupple
+    msg = '{0}' + txt_msg
+    mat = '\33[38;2;' + str(rf) + ';' + str(gf) + ';' + str(bf) + ';48;2;' + str(rb) + ';' + str(gb) + ';' + str(
+        bb) + 'm'
+    print(msg.format(mat), flush=True)
+    print('\33[0m', flush=True)  # returns default print color to back to black
+    return
+
 # 得到数据
 # train_ds = load_datasets()
 
@@ -154,4 +168,3 @@ def __load_dataset(dir, batch_size=64, image_size=(224,224)):
 # model.fit(train_ds, batch_size=64, epochs=10)
 # test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 # print('\nTest accuracy:', test_acc)
-

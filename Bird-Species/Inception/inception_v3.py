@@ -1,5 +1,5 @@
 import tensorflow as tf
-from Inception.inception_modules import InceptionModule_1, InceptionModule_2, \
+from .inception_modules import InceptionModule_1, InceptionModule_2, \
     InceptionModule_3, InceptionModule_4, InceptionModule_5, Preprocess
 from collections import namedtuple
 

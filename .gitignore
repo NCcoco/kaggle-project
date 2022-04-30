@@ -12,6 +12,14 @@ myutils
 myutils/*
 .DS_Store
 .DS_Store/*
-*/datasets/*
+**/datasets/**
 datasets
-
+**/tmp/**
+**/logs/**
+**/log/**
+*.npz
+**/models/**
+**/__pycache__/**
+__pycache__
+**/aug/**
+aug
