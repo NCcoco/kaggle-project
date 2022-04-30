@@ -25,3 +25,5 @@ __pycache__
 aug
 **/model
 **/models
+**/.idea
+.idea
