@@ -5,7 +5,7 @@ import pandas as pd
 import keras.api._v2.keras as keras
 from sklearn.metrics import confusion_matrix, classification_report
 from keras.api._v2.keras import layers, \
-    losses, regularizers, optimizers
+    losses, regularizers, optimizers, applications
 from keras.api._v2.keras.preprocessing.image import ImageDataGenerator
 import tensorflow as tf
 import tensorflow_hub as hub
@@ -221,11 +221,17 @@ test_batch_size = sorted([int(test_len / n) for n in range(1, test_len + 1)
                           if test_len % n == 0 and test_len / n <= 80], reverse=True)[0]
 
 # 平衡数据集
+dataset_name = "balance"
 train_df = ds_util.balance(train_df, min_num, max_num, work_dir,
                            label_column_name, image_size)
 
 
-trgen = ImageDataGenerator(preprocessing_function=scalar, horizontal_flip=True)
+# 然后将其转换为tf的数据生成器
+trgen = ImageDataGenerator(
+    preprocessing_function=scalar,
+    # 设置随机旋转角度 15度    # 设置随机水平翻转 # 设置随机垂直翻转
+    rotation_range=15, horizontal_flip=True, vertical_flip=True)
+
 tvgen = ImageDataGenerator(preprocessing_function=scalar)
 
 
@@ -254,7 +260,9 @@ test_steps = int(test_len / test_batch_size)
 valid_steps = int(np.ceil(len(valid_gen.labels) / batch_size))
 batches = train_steps
 # 初始化模型
+version = 1
 model = tf.keras.Sequential([
+    layers.Input(shape=(224, 224, 3)),
     # layers.InputLayer((image_size, image_size, 3)),
     hub.KerasLayer(r"transformer/models", trainable=False),
     layers.Dropout(dropout_p),
@@ -263,17 +271,19 @@ model = tf.keras.Sequential([
     layers.Dense(num_classes, activation="softmax", name="fc2")
 ])
 
-model.build(input_shape=(None, 224, 224, 3))
+# 加载已初始化好的
 print(model.summary())
 model.compile(optimizer=optimizers.Adam(learning_rate=learning_rate),
               loss=losses.CategoricalCrossentropy(),
               metrics=["accuracy"])
 
+
+tensorboard = keras.callbacks.TensorBoard("tmp", histogram_freq=1)
 callbacks = [
     LearningRateA(model=model, base_model=None, patience=patience,
                   stop_patience=stop_patience, threshold=threshold,
                 factor=factor, dwell=dwell, batches=batches, initial_epoch=0,
-                  epochs=epochs, ask_epoch=ask_epoch)]
+                  epochs=epochs, ask_epoch=ask_epoch), tensorboard]
 history = model.fit(x=train_gen, epochs=epochs, verbose=0,
                     callbacks=callbacks, validation_data=valid_gen,
                     validation_steps=None, shuffle=False, initial_epoch=0)
@@ -358,7 +368,9 @@ msg = f'accuracy on the test set is {acc:5.2f} %'
 print_in_color(msg, (0, 255, 0), (55, 65, 80))
 generator = train_gen
 scale = 1
-model_save_loc, csv_save_loc = saver(work_dir, model, model_name, subject, acc, image_size, scale, generator)
+model_save_loc, csv_save_loc = saver(
+    f"model/{model_name}", model, model_name, subject, acc, image_size, scale,
+    generator, epochs=epochs, version=version, dataset_name=dataset_name)
 
 print_code = 0
 preds = model.predict(test_gen, steps=test_steps)

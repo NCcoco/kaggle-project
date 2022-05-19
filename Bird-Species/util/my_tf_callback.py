@@ -281,7 +281,8 @@ class LearningRateA(keras.callbacks.Callback):
 
 
 # 定义一个函数用于保存模型及关联csv文件
-def saver(save_path, model, model_name, subject, accuracy, img_size, scalar, generator):
+def saver(save_path, model, model_name, subject, accuracy, img_size, scalar,
+          generator, epochs, version, dataset_name):
     """
 
     :param save_path: 保存路径
@@ -296,7 +297,8 @@ def saver(save_path, model, model_name, subject, accuracy, img_size, scalar, gen
     """
     print("保存路径是：", save_path)
     # 保存model (保存准确率的3位小数)
-    save_id = str(model_name + '-' + subject + '-' + str(accuracy)[:str(accuracy).rfind('.') + 3] + str(time.time()) + '.h5')
+    save_id = f"in-{dataset_name}-{model_name}-{version}v-{epochs}epochs-" \
+          f"{str(accuracy)[:str(accuracy).rfind('.') + 3]}-{time.time()}.h5"
     model_save_loc = os.path.join(save_path, save_id)
     model.save(model_save_loc)
     print_in_color('model was saved as' + model_save_loc, (0, 255, 0), (55, 65, 80))
